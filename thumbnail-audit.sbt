@@ -1,4 +1,4 @@
-name := "Thumbnails Project"
+name := "Thumbnail Audit"
 
 version := "1.0"
 

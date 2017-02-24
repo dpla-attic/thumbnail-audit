@@ -1,16 +1,16 @@
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-// import org.apache.spark.storage.StorageLevel
 import scala.util.{Try, Failure, Success}
 import javax.imageio.ImageIO
 import java.net.URL
 
-// This takes a stratfied sample of image URLs by provider.
+// This takes a stratfied sample of image URLs by provider and gets image
+// dimensions for that sample.
 
 // It takes as input the output parquet file from Cleanup class.
 // It outputs a parquet file with the following columns:
-//   name : String (name of the provider)
+//   provider : String (name of the provider)
 //   url : String (url of the thumbnail image)
 //   height : Int (height of the thumbnail image in pixels)
 //   width : Int (witdth of the thumbnail image in pixels)
@@ -20,11 +20,13 @@ import java.net.URL
 // Third argument: sample size, eg. "0.02"
 
 // Example usage:
-// PATH_TO_SPARK/bin/spark-submit --class "Sample" --master local[3] PATH_TO_THUMBNAILS_APP/target/scala-2.11/thumbnails-project_2.11-1.0.jar INPUT_PATH OUTPUT_PATH 0.02
+// PATH_TO_SPARK/bin/spark-submit --class "Sample" --master local[3] \
+//   PATH_TO_THUMBNAIL_AUDIT_APP/target/scala-2.11/thumbnail-audit_2.11-1.0.jar \
+//   INPUT_PATH OUTPUT_PATH 0.02
 
 object Sample {
 
-  val conf = new SparkConf().setAppName("Thumbnails Application")
+  val conf = new SparkConf().setAppName("Thumbnail Audit")
   val sc = new SparkContext(conf)
   val sqlContext = new org.apache.spark.sql.SQLContext(sc)
   case class Image(url: String, provider: String, width: Int, height: Int)
@@ -36,33 +38,35 @@ object Sample {
     val sampleSize = args(2).toDouble
 
     val data = sqlContext.read.parquet(inputPath)
-    // data.persist(StorageLevel.DISK_ONLY)
 
-    // Translate input DataFrame to RDD.
-    val dataRdd = data.rdd.map(x => (x(0).asInstanceOf[String], x(1).asInstanceOf[String]))
+    // Translate input DataFrame to RDD so it can be sampled.
+    val dataRdd = data.rdd
+                      .map(x => (x(0).asInstanceOf[String],
+                                 x(1).asInstanceOf[String]))
 
-    // Get stratfied sample.
+    // Get stratfied sample of images by provider.
+    // The sample size for each provider is approximate, not exact.
+    // `fractions` is a Map specifying the fraction of data (ie. `sampleSize`)
+    // for each key (provider name), eg. Map("Provider A" -> sampleSize)
     println("Getting stratified sample...")
-    val sample = stratifiedSample(dataRdd, sampleSize)
+    val fractions = dataRdd.keys
+                           .distinct
+                           .map(x => (x, sampleSize))
+                           .collect
+                           .toMap
+    val sample = dataRdd.sampleByKey(withReplacement = false, fractions = fractions)
 
     // Get image dimensions.
     // Any image URLs that fail to get dimensions are removed from sample.
     println("Getting image dimensions...")
     val images = sample.flatMap { case (k, v) => constructImage(k, v) }
-    val imagesDataFrame = sqlContext.createDataFrame(images)
 
-    // Save to file.
+    // Convert to DataFrame and save to file.
+    val imagesDataFrame = sqlContext.createDataFrame(images)
     imagesDataFrame.write.parquet(outputPath)
     println(s"Sample written to $outputPath")
 
     sc.stop()
-  }
-
-  // Return the specified percentage image URLs for each provider.
-  // The sample size for each provider is approximate, not exact.
-  def stratifiedSample(dataRdd: org.apache.spark.rdd.RDD[(String, String)], sampleSize: Double): org.apache.spark.rdd.RDD[(String, String)] = {
-    val fractions = dataRdd.keys.distinct.map(x => (x, sampleSize)).collect().toMap
-    dataRdd.sampleByKey(withReplacement = false, fractions = fractions)
   }
 
   // Return Some(Image) if attempt to get dimensions is successful.
