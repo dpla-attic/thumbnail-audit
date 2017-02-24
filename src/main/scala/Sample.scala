@@ -80,7 +80,7 @@ object Sample {
     }
   }
 
-  // Return Success(BufferedImage) attempt to read image over HTTP is successful.
+  // Return Success(BufferedImage) if attempt to read image over HTTP is successful.
   // Otherwise returns Failure(Exception)
   def bufferedImg(url: String) : Try[java.awt.image.BufferedImage] = Try {
     ImageIO.read(new URL(url))

@@ -67,7 +67,7 @@ object Cleanup {
   // Strip extra characters from URL Strings that represent arrays.
   // If multiple URLs are listed, it returns the first URL.
   // Example:
-  //   cleanArrays("[\"http://example.com\"]") -> "http://example.com"
+  //   stripArray("[\"http://example.com\"]") -> "http://example.com"
   def stripArray(url: String) : String = {
     def firstString(url: String) : String = {
       url.stripPrefix("[")
