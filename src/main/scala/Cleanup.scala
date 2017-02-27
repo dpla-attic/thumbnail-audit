@@ -25,11 +25,11 @@ import java.net.URL
 
 object Cleanup {
 
-  val conf = new SparkConf().setAppName("Thumbnail Audit")
-  val sc = new SparkContext(conf)
-  val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-
   def main(args: Array[String]) {
+
+    val conf = new SparkConf().setAppName("Thumbnail Audit")
+    val sc = new SparkContext(conf)
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
     val inputPath = args(0)
     val outputPath = args(1)
