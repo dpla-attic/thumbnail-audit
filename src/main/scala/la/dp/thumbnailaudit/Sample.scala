@@ -1,3 +1,5 @@
+package la.dp.thumbnailaudit
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
@@ -26,12 +28,12 @@ import java.net.URL
 
 object Sample {
 
-  val conf = new SparkConf().setAppName("Thumbnail Audit")
-  val sc = new SparkContext(conf)
-  val sqlContext = new org.apache.spark.sql.SQLContext(sc)
   case class Image(url: String, provider: String, width: Int, height: Int)
 
   def main(args: Array[String]) {
+    val conf = new SparkConf().setAppName("Thumbnail Audit")
+    val sc = new SparkContext(conf)
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
     val inputPath = args(0)
     val outputPath = args(1)
@@ -80,7 +82,7 @@ object Sample {
     }
   }
 
-  // Return Success(BufferedImage) attempt to read image over HTTP is successful.
+  // Return Success(BufferedImage) if attempt to read image over HTTP is successful.
   // Otherwise returns Failure(Exception)
   def bufferedImg(url: String) : Try[java.awt.image.BufferedImage] = Try {
     ImageIO.read(new URL(url))
