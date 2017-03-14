@@ -20,7 +20,8 @@ import java.net.URL
 //    eg. "cleanData.parquet"
 
 // Example usage:
-// PATH_TO_SPARK/bin/spark-submit --class "Cleanup" --master local[3] \
+// PATH_TO_SPARK/bin/spark-submit --class "la.dp.thumbnailaudit.Cleanup" \
+//   --master local[3] \
 //   PATH_TO_THUMBNAIL_AUDIT_APP/target/scala-2.11/thumbnail-audit_2.11-1.0.jar \
 //   INPUT_PATH OUTPUT_PATH
 
