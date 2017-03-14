@@ -1,3 +1,5 @@
+package la.dp.thumbnailaudit
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
@@ -25,11 +27,11 @@ import java.net.URL
 
 object Cleanup {
 
-  val conf = new SparkConf().setAppName("Thumbnail Audit")
-  val sc = new SparkContext(conf)
-  val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-
   def main(args: Array[String]) {
+
+    val conf = new SparkConf().setAppName("Thumbnail Audit")
+    val sc = new SparkContext(conf)
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
     val inputPath = args(0)
     val outputPath = args(1)
@@ -67,7 +69,7 @@ object Cleanup {
   // Strip extra characters from URL Strings that represent arrays.
   // If multiple URLs are listed, it returns the first URL.
   // Example:
-  //   cleanArrays("[\"http://example.com\"]") -> "http://example.com"
+  //   stripArray("[\"http://example.com\"]") -> "http://example.com"
   def stripArray(url: String) : String = {
     def firstString(url: String) : String = {
       url.stripPrefix("[")
