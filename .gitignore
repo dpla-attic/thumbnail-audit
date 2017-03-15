@@ -39,7 +39,6 @@ project/plugins/project/
 # User-specific stuff:
 .idea/*
 .idea/
-data/*
 
 # Sensitive or high-churn files:
 
